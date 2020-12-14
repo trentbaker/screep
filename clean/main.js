@@ -1,6 +1,7 @@
 // const roleHarvester = require("role.harvester");
 // const roleUpgrader = require("role.upgrader");
 // const roleBuilder = require("role.builder");
+const roleTower = require("role.tower");
 const roleMiner = require("role.miner");
 const roleHauler = require("role.hauler");
 
@@ -22,7 +23,9 @@ const garbageCollect = () => {
 
 const logRoomData = () => {
   for (var name in Game.rooms) {
-    console.log(`${name} has ${Game.rooms[name].energyAvailable} energy available`);
+    const avail = Game.rooms[name].energyAvailable
+    const total = Game.rooms[name].energyCapacityAvailable
+    console.log(`${name}: ${avail}/${total}`);
   }
 }
 
@@ -46,6 +49,10 @@ const spawnCreeps = (target, living) => {
   })
 }
 
+/*
+ Game.spawns['Spawn1'].spawnCreep([WORK, WORK, WORK, WORK, MOVE, CARRY], "t1", { memory: { role: "miner" } });
+ */
+
 // main game loop
 module.exports.loop = () => {
 
@@ -55,17 +62,18 @@ module.exports.loop = () => {
 
   const livingRoles = _.countBy(Game.creeps, creep => creep.memory.role)
 
-  Memory.yeet = livingRoles
-
   const populationTargets = {
-    miner: 2,
-    hauler: 2,
+    miner: 4,
+    hauler: 4,
   }
 
   spawnCreeps(populationTargets, livingRoles)
 
+  const towers = _.filter(Game.structures, { 'structureType': 'tower' })
+  _.forEach(towers, tower => roleTower.run(tower))
+
   // take role based action on each creep
   _.forEach(Game.creeps, (creep) => {
-    _.find(roles, {'tag': creep.memory.role }).run(creep)
+    _.find(roles, { 'tag': creep.memory.role }).run(creep)
   })
 };

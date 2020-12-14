@@ -10,11 +10,11 @@ const bodies = {
 const roleMiner = {
     tag: "miner",
     body: (maxCapacity) => {
-        if (maxCapacity < 550) return bodies.ALPHA;
-        else if (maxCapacity < 750) return bodies.BETA;
-        else if (maxCapacity < 1250) return bodies.GAMMA;
-        else if (maxCapacity < 1750) return bodies.DELTA;
-        else if (maxCapacity < 2250) return bodies.EPSILON;
+        if (maxCapacity <= 550) return bodies.ALPHA;
+        else if (maxCapacity <= 750) return bodies.BETA;
+        else if (maxCapacity <= 1250) return bodies.GAMMA;
+        else if (maxCapacity <= 1750) return bodies.DELTA;
+        else if (maxCapacity <= 2250) return bodies.EPSILON;
         else if (maxCapacity >= 2250) return bodies.ZETA;
     },
     run: (creep) => {

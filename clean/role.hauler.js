@@ -10,11 +10,11 @@ const bodies = {
 const roleHauler = {
     tag: 'hauler',
     body: (maxCapacity) => {
-        if (maxCapacity < 500) return bodies.ALPHA;
-        else if (maxCapacity < 800) return bodies.BETA;
-        else if (maxCapacity < 1300) return bodies.GAMMA;
-        else if (maxCapacity < 1800) return bodies.DELTA;
-        else if (maxCapacity < 2300) return bodies.EPSILON;
+        if (maxCapacity <= 500) return bodies.ALPHA;
+        else if (maxCapacity <= 800) return bodies.BETA;
+        else if (maxCapacity <= 1300) return bodies.GAMMA;
+        else if (maxCapacity <= 1800) return bodies.DELTA;
+        else if (maxCapacity <= 2300) return bodies.EPSILON;
         else if (maxCapacity >= 2300) return bodies.ZETA;
     },
     run: (creep) => {
@@ -26,10 +26,11 @@ const roleHauler = {
 
         const sinkTypes = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION]
         const sinks = creep.room.find(FIND_MY_STRUCTURES, { filter: structure => sinkTypes.includes(structure.structureType) })
-        const sinkTarget = _.min(sinks, 'energy')
+        const sinkTarget = _.sortBy(sinks, sink => sink.energy - sink.energyCapacity)[0]
 
         const activeTask = creep.memory.task
 
+        if (activeTask == "collect" && _.isEmpty(sources)) creep.memory.task = "submit"
         if (activeTask == "collect" && creep.pickup(sourceTarget) == ERR_NOT_IN_RANGE) creep.moveTo(sourceTarget, { visualizePathStyle: { stroke: "#eeeeee" } });
         if (activeTask == "submit" && creep.transfer(sinkTarget, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(sinkTarget, { visualizePathStyle: { stroke: "#eeeeee" } });
 
