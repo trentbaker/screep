@@ -1,8 +1,15 @@
-const roleHarvester = require("role.harvester");
-const roleUpgrader = require("role.upgrader");
-const roleBuilder = require("role.builder");
+// const roleHarvester = require("role.harvester");
+// const roleUpgrader = require("role.upgrader");
+// const roleBuilder = require("role.builder");
+const roleMiner = require("role.miner");
+const roleHauler = require("role.hauler");
 
-module.exports.loop = function () {
+const roles = {
+  miner: roleMiner,
+  hauler: roleHauler,
+}
+
+const garbageCollect = () => {
   for (var name in Memory.creeps) {
     if (!Game.creeps[name]) {
       delete Memory.creeps[name];
@@ -11,115 +18,54 @@ module.exports.loop = function () {
       Game.creeps[name].refresh;
     }
   }
+}
 
+const logRoomData = () => {
   for (var name in Game.rooms) {
     console.log(`${name} has ${Game.rooms[name].energyAvailable} energy available`);
   }
+}
 
+const spawnScaledCreep = (maxCapacity, role) => {
+  Game.spawns["Spawn1"].spawnCreep(role.body(maxCapacity), `${role.tag}_${Game.time}`, { memory: { role: role.tag } });
+}
 
-  const creepTypes = {
-    HARVESTER_ALPHA: {
-      body: [WORK, CARRY, MOVE],
-      level: 1,
-      role: "harvester",
-      namePrefix: "hrv_01",
-    },
-    HARVESTER_BETA: {
-      body: [WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE],
-      level: 4,
-      role: 'harvester',
-      namePrefix: "hrv_04",
-    },
-    UPGRADER_ALPHA: {
-      body: [WORK, CARRY, MOVE],
-      level: 1,
-      role: "upgrader",
-      namePrefix: "upg_01",
-    },
-    UPGRADER_BETA: {
-      body: [WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE],
-      level: 4,
-      role: "upgrader",
-      namePrefix: "upg_04",
-    },
-    BUILDER_ALPHA: {
-      body: [WORK, CARRY, MOVE],
-      level: 1,
-      role: "builder",
-      namePrefix: "bld_01",
-    },
-    BUILDER_BETA: {
-      body: [WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE],
-      role: "builder",
-      namePrefix: "bld_04",
-    },
-  };
+const spawnCreeps = (target, living) => {
+  _.forEach(target, (targetPop, role) => {
+    const livingPop = living[role] ? living[role] : 0
+    console.log(`${livingPop}/${targetPop} living ${role}s`)
+    if (!livingPop || livingPop < targetPop) {
+      const spawn = Game.spawns["Spawn1"]
+      const maxPrice = spawn.room.energyCapacityAvailable
+      const relevantRole = _.find(roles, { 'tag': role })
+      const newBody = relevantRole.body(maxPrice)
+      const newName = `${role}_${newBody.length}_${Game.time}`
 
-  const livingRoles = {
-    HARVESTER: _.filter(
-      Game.creeps,
-      (creep) => creep.memory.role == creepTypes.HARVESTER_ALPHA.role
-    ),
-    UPGRADER: _.filter(
-      Game.creeps,
-      (creep) => creep.memory.role == creepTypes.UPGRADER_ALPHA.role
-    ),
-    BUILDER: _.filter(
-      Game.creeps,
-      (creep) => creep.memory.role == creepTypes.BUILDER_ALPHA.role
-    ),
-  };
-
-  const spawnCreepType = (creepType) => {
-    Game.spawns["Spawn1"].spawnCreep(
-      creepType.body,
-      `${creepType.namePrefix}_${Game.time}`,
-      { memory: { role: creepType.role } }
-    );
-  }
-
-  if (livingRoles.HARVESTER.length < 2) {
-    spawnCreepType(creepTypes.HARVESTER_BETA);
-  } else if (livingRoles.BUILDER.length < 2) {
-    spawnCreepType(creepTypes.BUILDER_BETA);
-  } else if (livingRoles.UPGRADER.length < 4) {
-    spawnCreepType(creepTypes.UPGRADER_BETA);
-  }
-
-  // Game.spawns["Spawn1"].spawnCreep([WORK, CARRY, MOVE], "u1", { memory: { role: "upgrader" } });
-  // Game.spawns["Spawn1"].spawnCreep([WORK, CARRY, MOVE], "b1", { memory: { role: "builder" } });
-  // Game.spawns["Spawn1"].spawnCreep([WORK, CARRY, MOVE], "h1", { memory: { role: "harvester" } });
-
-  var tower = Game.getObjectById("4118f0e6524323c1f5b947f5");
-  if (tower) {
-    var closestDamagedStructure = tower.pos.findClosestByRange(
-      FIND_STRUCTURES,
-      {
-        filter: (structure) => structure.hits < structure.hitsMax,
-      }
-    );
-    if (closestDamagedStructure) {
-      tower.repair(closestDamagedStructure);
+      spawn.spawnCreep(newBody, newName, { memory: { role: role } })
     }
+  })
+}
 
-    var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-    if (closestHostile) {
-      tower.attack(closestHostile);
-    }
+// main game loop
+module.exports.loop = () => {
+
+  garbageCollect()
+
+  logRoomData()
+
+  const livingRoles = _.countBy(Game.creeps, creep => creep.memory.role)
+
+  Memory.yeet = livingRoles
+
+  const populationTargets = {
+    miner: 2,
+    hauler: 2,
   }
 
-  for (var name in Game.creeps) {
-    var creep = Game.creeps[name];
-    switch (creep.memory.role) {
-      case "harvester":
-        roleHarvester.run(creep);
-        break;
-      case "upgrader":
-        roleUpgrader.run(creep);
-        break;
-      case "builder":
-        roleBuilder.run(creep);
-        break;
-    }
-  }
+  spawnCreeps(populationTargets, livingRoles)
+
+  // take role based action on each creep
+  _.forEach(Game.creeps, (creep) => {
+    _.find(roles, {'tag': creep.memory.role }).run(creep)
+  })
 };

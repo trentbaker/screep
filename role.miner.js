@@ -1,28 +1,39 @@
-const roleUpgrader = {
+const bodies = {
+    ALPHA: [WORK, WORK, MOVE, CARRY],
+    BETA: [WORK, WORK, WORK, WORK, MOVE, CARRY],
+    GAMMA: [WORK, WORK, WORK, WORK, WORK, WORK, WORK, MOVE, CARRY],
+    DELTA: [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, MOVE, CARRY],
+    EPSILON: [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, MOVE, CARRY],
+    ZETA: [WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, MOVE, CARRY]
+};
 
+const roleMiner = {
+    tag: "miner",
+    body: (maxCapacity) => {
+        if (maxCapacity < 550) return bodies.ALPHA;
+        else if (maxCapacity < 750) return bodies.BETA;
+        else if (maxCapacity < 1250) return bodies.GAMMA;
+        else if (maxCapacity < 1750) return bodies.DELTA;
+        else if (maxCapacity < 2250) return bodies.EPSILON;
+        else if (maxCapacity >= 2250) return bodies.ZETA;
+    },
     run: (creep) => {
 
-        if (creep.memory.upgrading && creep.store[RESOURCE_ENERGY] == 0) {
-            creep.memory.upgrading = false
-            creep.say("🔄 harvest")
-        } else if (!creep.memory.upgrading && creep.store.getFreeCapacity() == 0) {
-            creep.memory.upgrading = true
-            creep.say("⚡ upgrade")
-        }
+        // creep.refresh()
+        // if no target, set to nearest
+        if (!creep.memory.jobsite) creep.memory.jobsite = creep.room.find(FIND_SOURCES)[0].id;
 
-        if (creep.memory.upgrading) {
-            if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(creep.room.controller, {
-                    visualizePathStyle: { stroke: "#ffffff" },
-                })
-            }
-        } else {
-            var sources = creep.room.find(FIND_SOURCES_ACTIVE)
-            if (creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(sources[0], { visualizePathStyle: { stroke: "#ffaa00" } })
-            }
+        const target = Game.getObjectById(creep.memory.jobsite)
+        const bucket = creep.room.lookAt(creep.pos)
+        const cont = _.filter(bucket, { type: 'structure' })
+        creep.memory.bucket = cont
+        // if(cont) console.log(cont)
+
+
+        if (creep.harvest(target) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(target, { visualizePathStyle: { stroke: "#eeeeee" } });
         }
     },
-}
+};
 
-module.exports = roleUpgrader
+module.exports = roleMiner;
