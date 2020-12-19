@@ -9,13 +9,9 @@ const bodies = {
 
 const roleUpgrader = {
     tag: 'upgrader',
-    body: (maxCapacity) => {
-        if (maxCapacity <= 300) return bodies.ALPHA;
-        else if (maxCapacity <= 400) return bodies.BETA;
-        else if (maxCapacity <= 800) return bodies.GAMMA;
-        else if (maxCapacity <= 1200) return bodies.DELTA;
-        else if (maxCapacity <= 1800) return bodies.EPSILON;
-        else if (maxCapacity >= 2200) return bodies.ZETA;
+    body: {
+        gene: [WORK, CARRY],
+        required: [MOVE],
     },
     run: (creep) => {
         const actions = {

@@ -12,6 +12,17 @@ const roles = {
   builder: roleBuilder,
 }
 
+const generateBody = (gene, required, price) => {
+  const geneCost = _.sum(_.map(gene, part => BODYPART_COST[part]))
+  const requireCost = _.sum(_.map(required, part => BODYPART_COST[part]))
+
+  const geneCount = parseInt((price - requireCost) / geneCost)
+  const geneParts = _.flatten(Array(geneCount).fill(gene))
+
+  if (!required) return geneParts
+  else return [...geneParts, ...required]
+}
+
 const garbageCollect = () => {
   for (var name in Memory.creeps) {
     if (!Game.creeps[name]) {
@@ -40,11 +51,13 @@ const spawnCreeps = (target, living) => {
     const livingPop = living[role] ? living[role] : 0
     console.log(`${livingPop}/${targetPop} living ${role}s`)
     if (!livingPop || livingPop < targetPop) {
+      const nameTag = size => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
       const spawn = Game.spawns["Spawn1"]
       const maxPrice = spawn.room.energyCapacityAvailable
       const relevantRole = _.find(roles, { 'tag': role })
-      const newBody = relevantRole.body(maxPrice)
-      const newName = `${role}_${newBody.length}_${Game.time}`
+      const newBody = generateBody(relevantRole.body.gene, relevantRole.body.required, maxPrice)
+      const newName = `${role}_${newBody.length}_${nameTag(8)}`
+
 
       spawn.spawnCreep(newBody, newName, { memory: { role: role } })
       return false // hope to eject
@@ -69,8 +82,8 @@ module.exports.loop = () => {
     miner: 3,
     hauler: 3,
     builder: 3,
-    upgrader: 3,
-}
+    upgrader: 2,
+  }
 
   spawnCreeps(populationTargets, livingRoles)
 

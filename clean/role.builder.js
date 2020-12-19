@@ -1,21 +1,8 @@
-const bodies = {
-    ALPHA: [WORK, CARRY, WORK, MOVE],
-    BETA: [WORK, CARRY, WORK, CARRY, WORK, CARRY, MOVE, MOVE],
-    GAMMA: [WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, MOVE],
-    DELTA: [WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, MOVE, MOVE],
-    EPSILON: [WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, MOVE, MOVE, MOVE],
-    ZETA: [WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, WORK, CARRY, MOVE]
-};
-
 const roleBuilder = {
     tag: 'builder',
-    body: (maxCapacity) => {
-        if (maxCapacity <= 300) return bodies.ALPHA;
-        else if (maxCapacity <= 550) return bodies.BETA;
-        else if (maxCapacity <= 800) return bodies.GAMMA;
-        else if (maxCapacity <= 1300) return bodies.DELTA;
-        else if (maxCapacity <= 1800) return bodies.EPSILON;
-        else if (maxCapacity >= 2300) return bodies.ZETA;
+    body: {
+        gene: [WORK, CARRY],
+        required: [MOVE],
     },
     run: (creep) => {
         const actions = {

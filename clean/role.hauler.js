@@ -1,21 +1,8 @@
-const bodies = {
-    ALPHA: [CARRY, MOVE, CARRY, MOVE, CARRY, MOVE],
-    BETA: [CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE],
-    GAMMA: [CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE],
-    DELTA: [CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE],
-    EPSILON: [CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE],
-    ZETA: [CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE],
-};
-
 const roleHauler = {
     tag: 'hauler',
-    body: (maxCapacity) => {
-        if (maxCapacity <= 500) return bodies.ALPHA;
-        else if (maxCapacity <= 800) return bodies.BETA;
-        else if (maxCapacity <= 1300) return bodies.GAMMA;
-        else if (maxCapacity <= 1800) return bodies.DELTA;
-        else if (maxCapacity <= 2300) return bodies.EPSILON;
-        else if (maxCapacity >= 2300) return bodies.ZETA;
+    body: {
+        gene: [MOVE, CARRY],
+        required: [],
     },
     run: (creep) => {
         const actions = {
@@ -41,12 +28,13 @@ const roleHauler = {
                 if (!creep.memory.sink) {
                     const sinkTypes = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION]
                     const sinks = creep.room.find(FIND_MY_STRUCTURES, { filter: structure => sinkTypes.includes(structure.structureType) })
-                    creep.memory.sink = _.min(sinks, sink => sink.store.getFreeCapacity()).id
+                    const unfilledSinks = _.filter(sinks, sink => sink.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
+                    creep.memory.sink = _.min(unfilledSinks, sink => sink.store.getFreeCapacity(RESOURCE_ENERGY)).id
                 }
 
                 const target = Game.getObjectById(creep.memory.sink)
 
-                if (!target) {
+                if (!target || !target.store.getFreeCapacity(RESOURCE_ENERGY)) {
                     creep.memory.sink = false
                     return
                 } else if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(target, { visualizePathStyle: { stroke: "#eeeeee" } })
