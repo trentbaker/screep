@@ -19,18 +19,19 @@ const roleMiner = {
     },
     run: (creep) => {
 
-        // creep.refresh()
         // if no target, set to nearest
         if (!creep.memory.jobsite) creep.memory.jobsite = creep.room.find(FIND_SOURCES)[0].id;
 
         const target = Game.getObjectById(creep.memory.jobsite)
-        const bucket = creep.room.lookAt(creep.pos)
-        const cont = _.filter(bucket, { type: 'structure' })
-        creep.memory.bucket = cont
-        // if(cont) console.log(cont)
+        const isSupported = creep.room.find(FIND_MY_CREEPS, { filter: creep => creep.memory.role == 'hauler'}).length > 0
+        const freeSpace = creep.store.getFreeCapacity()
+        const sinkTypes = [STRUCTURE_SPAWN]
+        const sinks = creep.room.find(FIND_MY_STRUCTURES, { filter: structure => sinkTypes.includes(structure.structureType) })
+        const sinkTarget = sinks[0]
 
-
-        if (creep.harvest(target) == ERR_NOT_IN_RANGE) {
+        if (freeSpace == 0 && !isSupported && creep.transfer(sinkTarget, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(sinkTarget, { visualizePathStyle: { stroke: "#eeeeee" } })
+        } else if (creep.harvest(target) == ERR_NOT_IN_RANGE) {
             creep.moveTo(target, { visualizePathStyle: { stroke: "#eeeeee" } });
         }
     },

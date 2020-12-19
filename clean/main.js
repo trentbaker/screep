@@ -1,6 +1,6 @@
-// const roleHarvester = require("role.harvester");
-// const roleUpgrader = require("role.upgrader");
-// const roleBuilder = require("role.builder");
+
+const roleUpgrader = require("role.upgrader");
+const roleBuilder = require("role.builder");
 const roleTower = require("role.tower");
 const roleMiner = require("role.miner");
 const roleHauler = require("role.hauler");
@@ -8,6 +8,8 @@ const roleHauler = require("role.hauler");
 const roles = {
   miner: roleMiner,
   hauler: roleHauler,
+  upgrader: roleUpgrader,
+  builder: roleBuilder,
 }
 
 const garbageCollect = () => {
@@ -45,12 +47,13 @@ const spawnCreeps = (target, living) => {
       const newName = `${role}_${newBody.length}_${Game.time}`
 
       spawn.spawnCreep(newBody, newName, { memory: { role: role } })
+      return false // hope to eject
     }
   })
 }
 
 /*
- Game.spawns['Spawn1'].spawnCreep([WORK, WORK, WORK, WORK, MOVE, CARRY], "t1", { memory: { role: "miner" } });
+ Game.spawns['Spawn1'].spawnCreep([WORK, WORK, MOVE, CARRY], "t1", { memory: { role: "miner" } });
  */
 
 // main game loop
@@ -63,9 +66,11 @@ module.exports.loop = () => {
   const livingRoles = _.countBy(Game.creeps, creep => creep.memory.role)
 
   const populationTargets = {
-    miner: 4,
-    hauler: 4,
-  }
+    miner: 3,
+    hauler: 3,
+    builder: 3,
+    upgrader: 3,
+}
 
   spawnCreeps(populationTargets, livingRoles)
 
