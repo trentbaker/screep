@@ -6,7 +6,7 @@ module.exports = function (grunt) {
         screeps: {
             options: {
                 email: 'b.trent5@gmail.com',
-                token: '26867342-95d6-43eb-88fc-0d4e7047f2eb',
+                token: 'lol',
                 branch: 'screep'
             },
             dist: {
