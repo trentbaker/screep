@@ -21,11 +21,14 @@ const roleBuilder = {
             },
             refill: (creep) => {
                 if (!creep.memory.source) {
+                    const ruins = _.filter(creep.room.find(FIND_RUINS), ruin => ruin.store.getUsedCapacity() > 0)
+                    const ruin = _.min(ruins, ruin => ruin.store.getUsedCapacity() > 0)
                     const onTheGround = _.max(creep.room.find(FIND_DROPPED_RESOURCES), 'amount')
                     const containers = creep.room.find(FIND_MY_STRUCTURES, { filter: structure => structure.structureType == STRUCTURE_CONTAINER })
-                    const container = _.min(containers, 'amount')
+                    const container = _.max(containers, 'amount')
 
-                    if (onTheGround) creep.memory.source = onTheGround.id
+                    if (ruin) creep.memory.source = ruin.id
+                    else if (onTheGround) creep.memory.source = onTheGround.id
                     else if (container) creep.memory.source = container.id
                     else creep.memory.source = false
                 }
@@ -36,6 +39,7 @@ const roleBuilder = {
                     creep.memory.source = false
                     return
                 } else if (creep.pickup(target) == ERR_NOT_IN_RANGE) creep.moveTo(target, { visualizePathStyle: { stroke: "#eeeeee" } })
+                else if (creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(target, { visualizePathStyle: { stroke: "#eeeeee" } })
             },
         }
 

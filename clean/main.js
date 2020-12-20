@@ -19,8 +19,10 @@ const generateBody = (gene, required, price) => {
   const geneCount = parseInt((price - requireCost) / geneCost)
   const geneParts = _.flatten(Array(geneCount).fill(gene))
 
-  if (!required) return geneParts
-  else return [...geneParts, ...required]
+  const moveFillerCount = (price-((geneCount*geneCost)+requireCost))/BODYPART_COST[MOVE]
+  const moveFiller = Array(moveFillerCount).fill(MOVE)
+
+  return [...geneParts, ...required, ...moveFiller]
 }
 
 const garbageCollect = () => {
@@ -60,7 +62,7 @@ const spawnCreeps = (target, living) => {
 
 
       spawn.spawnCreep(newBody, newName, { memory: { role: role } })
-      return false // hope to eject
+      return false // eject
     }
   })
 }
@@ -79,10 +81,10 @@ module.exports.loop = () => {
   const livingRoles = _.countBy(Game.creeps, creep => creep.memory.role)
 
   const populationTargets = {
-    miner: 3,
+    miner: 2,
     hauler: 3,
     builder: 3,
-    upgrader: 2,
+    upgrader: 3,
   }
 
   spawnCreeps(populationTargets, livingRoles)
