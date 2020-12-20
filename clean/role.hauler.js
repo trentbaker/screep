@@ -8,25 +8,22 @@ const roleHauler = {
         const actions = {
             collect: (creep) => {
                 if (!creep.memory.source) {
-                    const ruins = _.filter(creep.room.find(FIND_RUINS), ruin => ruin.store.getUsedCapacity() > 0)
-                    const ruin = _.min(ruins, ruin => ruin.store.getUsedCapacity() > 0)
                     const onTheGround = _.max(creep.room.find(FIND_DROPPED_RESOURCES), 'amount')
                     const containers = creep.room.find(FIND_MY_STRUCTURES, { filter: structure => structure.structureType == STRUCTURE_CONTAINER })
                     const container = _.max(containers, 'amount')
 
-                    if(ruin) creep.memory.source = ruin.id
-                    else if (onTheGround) creep.memory.source = onTheGround.id
+                    if (onTheGround) creep.memory.source = onTheGround.id
                     else if (container) creep.memory.source = container.id
                     else creep.memory.source = false
                 }
 
                 const target = Game.getObjectById(creep.memory.source)
+                creep.memory.yoten = target
 
-                if (!target) {
+                if (!target || target.amount == 0) {
                     creep.memory.source = false
                     return
                 } else if (creep.pickup(target) == ERR_NOT_IN_RANGE) creep.moveTo(target, { visualizePathStyle: { stroke: "#eeeeee" } })
-                else if (creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(target, { visualizePathStyle: { stroke: "#eeeeee" } })
             },
             deposit: (creep) => {
                 if (!creep.memory.sink) {
@@ -47,13 +44,10 @@ const roleHauler = {
 
         const freeSpace = creep.store.getFreeCapacity()
         const usedSpace = creep.store.getUsedCapacity()
-        const source = Game.getObjectById(creep.memory.source)
-        const sourceHasEnergy = source && source.store.getUsedCapacity()
         const activeTask = creep.memory.task
 
         if (!activeTask) creep.memory.task = "collect"
         else if (activeTask == "collect" && freeSpace == 0) creep.memory.task = "deposit"
-        else if (activeTask == "collect" && !sourceHasEnergy) creep.memory.source = false
         else if (activeTask == "deposit" && usedSpace == 0) creep.memory.task = "collect"
 
         if (creep.memory.task == "collect") actions.collect(creep)

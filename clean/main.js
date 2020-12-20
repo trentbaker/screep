@@ -83,8 +83,8 @@ module.exports.loop = () => {
   const populationTargets = {
     miner: 2,
     hauler: 3,
-    builder: 3,
     upgrader: 3,
+    builder: 3,
   }
 
   spawnCreeps(populationTargets, livingRoles)
